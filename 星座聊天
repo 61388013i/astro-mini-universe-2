@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>星座占卜小宇宙｜今日運勢・提醒卡・抽牌</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #1b1b3a 0%, #050510 55%, #000000 100%);
+      color: #f7f7ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: rgba(14, 14, 40, 0.92);
+      border-radius: 24px;
+      padding: 24px 24px 28px;
+      max-width: 520px;
+      width: 92%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(180, 180, 255, 0.25);
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-top: 0;
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 1.1rem;
+    }
+    label {
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    select, textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 10px;
+      font-size: 0.95rem;
+      margin-bottom: 0.9rem;
+      background: rgba(10, 10, 30, 0.85);
+      color: #f7f7ff;
+      outline: none;
+    }
+    select:focus, textarea:focus {
+      border-color: #b794ff;
+      box-shadow: 0 0 0 1px rgba(183, 148, 255, 0.7);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .pill-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .pill {
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      opacity: 0.8;
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 0.4rem;
+      margin-bottom: 0.9rem;
+    }
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #b794ff, #7f5dff);
+      color: #050510;
+      cursor: pointer;
+      flex: 1;
+      min-width: 140px;
+    }
+    button:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    .result-block {
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+    .result-title {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-box {
+      background: radial-gradient(circle at top left, rgba(183,148,255,0.15), rgba(10,10,30,0.9));
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      border: 1px dashed rgba(215, 196, 255, 0.6);
+      white-space: pre-line;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .hint {
+      font-size: 0.78rem;
+      opacity: 0.7;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>星座占卜小宇宙</h1>
+    <div class="subtitle">今日運勢、提醒卡與三張牌，一次收齊 ✨</div>
+
+    <div class="pill-row">
+      <div class="pill">純前端靜態網頁</div>
+      <div class="pill">無需 API key</div>
+      <div class="pill">適合作業 / 小專題</div>
+    </div>
+
+    <label for="sign">你的星座</label>
+    <select id="sign">
+      <option value="牡羊座">牡羊座</option>
+      <option value="金牛座">金牛座</option>
+      <option value="雙子座">雙子座</option>
+      <option value="巨蟹座">巨蟹座</option>
+      <option value="獅子座">獅子座</option>
+      <option value="處女座">處女座</option>
+      <option value="天秤座">天秤座</option>
+      <option value="天蠍座">天蠍座</option>
+      <option value="射手座">射手座</option>
+      <option value="摩羯座">摩羯座</option>
+      <option value="水瓶座">水瓶座</option>
+      <option value="雙魚座">雙魚座</option>
+    </select>
+
+    <label for="note">想補充給宇宙知道的小事（可留白）</label>
+    <textarea id="note" placeholder="例如：最近在趕報告、有點焦慮，但還是想知道自己會不會順利。"></textarea>
+
+    <div class="button-row">
+      <button id="btnHoroscope">🔮 今日占星運勢</button>
+      <button id="btnSingleCard">🕯️ 今日提醒卡</button>
+      <button id="btnThreeCards">✨ 三張牌：過去 / 現在 / 未來</button>
+    </div>
+
+    <div class="result-block">
+      <div class="result-title">🔎 解析結果</div>
+      <div id="result" class="result-box">
+        選好星座後，試試上面的按鈕：
+        ・「今日占星運勢」：偏整體狀態
+        ・「今日提醒卡」：給你一句當下需要聽的話
+        ・「三張牌」：用過去 / 現在 / 未來的角度幫你排版今天的人生
+      </div>
+      <div class="hint">※ 所有內容皆為程式隨機生成，僅供參考、不連線任何伺服器或 AI 模型。</div>
+    </div>
+  </div>
+
+  <script>
+    // 每個星座的口氣設定
+    const signTones = {
+      "牡羊座": "你今天的狀態像是踩在油門和煞車之間，一不小心就想衝出去，但又會突然冷靜下來。",
+      "金牛座": "你特別需要一種被好好對待的感覺，不一定是大事，只要是穩定、可預期就會讓你安心。",
+      "雙子座": "你的腦袋資訊量有點爆棚，靈感與雜訊混在一起，容易一邊焦慮一邊滑手機。",
+      "巨蟹座": "你的情緒今天比較放大，很容易被一句話、一個表情就影響，但同時也比較能共感他人。",
+      "獅子座": "你渴望被看見，但外界回應可能沒有你期待的那麼大聲，所以會有一點小小失落。",
+      "處女座": "你今天在意細節的程度比平常更高，容易被小錯誤卡住，但也因此特別適合收尾未完成的事。",
+      "天秤座": "你夾在很多選擇中間，怕將就、也怕錯過，很適合找一個可信任的人一起討論。",
+      "天蠍座": "你感覺到水面下有什麼在悄悄變動，直覺很敏銳，只是還說不出具體是什麼。",
+      "射手座": "你對自由的需求特別明顯，很怕被行程、作業或任何承諾綁住。",
+      "摩羯座": "你今天很務實，會不自覺把一切轉換成『值不值得花力氣』來評估。",
+      "水瓶座": "你對既定規則特別反感，會想用自己的方式拆解、重組那些大家覺得理所當然的東西。",
+      "雙魚座": "你今天特別敏感，容易被氣氛牽著走，很適合做一點讓自己舒服的小事。"
+    };
+
+    // 今日運勢：總體氛圍 + 小提醒
+    const horoscopeVibes = [
+      "今天的主題是：在混亂裡找到一個可以暫時喘息的小角落。",
+      "今天適合先照顧好自己的身體，再談理想與計畫。",
+      "今天的你不一定狀態完美，但某種不完美剛好讓你更接近真實的自己。",
+      "今天很適合把節奏調慢一點，讓事情有機會自己長出答案。",
+      "今天容易被別人的步調影響，但你仍然有權選擇自己的速度。"
+    ];
+
+    const smallTips = [
+      "試著在行程中空出 10 分鐘，只做一件完全跟效率無關的小事。",
+      "如果事情很多，先寫下三件『不做也不會世界毀滅』的事，暫時從待辦清單刪掉。",
+      "允許自己有一點點廢，一點點就好，不需要拿今天的自己和巔峰狀態比較。",
+      "把你最在意的一件事寫下來，問自己：如果只完成 60%，是不是還是可以？",
+      "找一個你信任的人，傳一個不需要得到回覆的訊息，只是讓對方知道你還在努力。"
+    ];
+
+    // 今日提醒卡：一句話＋簡短說明
+    const reminderCards = [
+      {
+        title: "卡片：你可以慢一點",
+        body: "你不用每一刻都表現得很有方向感。允許自己暫時模糊，方向感會在你願意停下來的時候慢慢自己長出來。"
+      },
+      {
+        title: "卡片：你已經做得比想像中多",
+        body: "你習慣看著自己還沒做到的地方，但如果把這一兩週累積的努力排成一列，你會發現自己其實沒有停下來過。"
+      },
+      {
+        title: "卡片：請先照顧現在的你",
+        body: "有時候你太忙著成為『未來會感謝的自己』，卻忘記安撫正在辛苦撐著的現在的你。今天先對現在的自己好一點。"
+      },
+      {
+        title: "卡片：你不是一個人",
+        body: "即使大家看起來都很忙、很厲害、很成熟，也有人在跟你一樣的位置上用力撐著。你可以選擇把一點點重量交給別人。"
+      },
+      {
+        title: "卡片：你可以換一種問法",
+        body: "如果『我要怎麼做到最好』太痛苦，不妨改問：『我怎麼做才不會那麼累、但還是有前進一點？』"
+      }
+    ];
+
+    // 三張牌的內容（過去 / 現在 / 未來）
+    const pastCards = [
+      "過去的你習慣先把別人的期待放在前面，很多決定其實是為了不要讓別人失望。",
+      "你走到現在，是靠著一次次『先撐過去再說』的決定堆積起來的，這份韌性值得被看見。",
+      "你曾經為了想要被認同，而做了很多超過自己極限的事，這也是為什麼你現在會特別容易累。",
+      "你已經試過很多別人教的做法了，所以你有資格開始相信自己的直覺。"
+    ];
+
+    const presentCards = [
+      "現在的你站在一個十字路口，看起來像是在原地打轉，但其實你正在排除不適合自己的選項。",
+      "你表面上看起來還在照常運作，心裡卻同時在重整優先順序，這種內在重組本來就會伴隨混亂感。",
+      "你同時背著『要負責任』和『想要自由』兩個背包，所以才會覺得特別重。",
+      "你其實已經隱約知道哪一條路比較貼近自己，只是還在幫自己找到說服的理由。"
+    ];
+
+    const futureCards = [
+      "未來的你不會變成完美版本，但會變成一個比較懂得分配力氣的人，知道什麼值得、什麼可以放過。",
+      "如果你願意從今天開始為自己多做一點點選擇，未來的生活會慢慢長成比較像你的樣子。",
+      "有一天你會發現，當初那些以為會毀掉一切的失誤，只是幫你換了一條更適合的路線。",
+      "未來的你回頭看現在，會對現在的自己說：『謝謝你那時候沒有放棄。』"
+    ];
+
+    function pickRandom(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function getUserNoteText(note) {
+      if (!note.trim()) return "";
+      return `\n\n你對宇宙悄悄補充的是：\n「${note.trim()}」\n就把它當作今天抽牌時，一起被讀取的背景訊息。`;
+    }
+
+    // 今日占星運勢
+    document.getElementById("btnHoroscope").addEventListener("click", () => {
+      const sign = document.getElementById("sign").value;
+      const note = document.getElementById("note").value;
+
+      const tone = signTones[sign] || "";
+      const vibe = pickRandom(horoscopeVibes);
+      const tip = pickRandom(smallTips);
+      const noteText = getUserNoteText(note);
+
+      const text =
+`【${sign}｜今日占星運勢】
+
+${tone}
+
+宇宙的今日主題：
+${vibe}
+
+給你的實用小提醒：
+${tip}${noteText}
+
+※ 請把這個結果當作一個小小觀察視角，而不是命令。`;
+
+      document.getElementById("result").textContent = text;
+    });
+
+    // 單張今日提醒卡
+    document.getElementById("btnSingleCard").addEventListener("click", () => {
+      const sign = document.getElementById("sign").value;
+      const note = document.getElementById("note").value;
+
+      const card = pickRandom(reminderCards);
+      const noteText = getUserNoteText(note);
+
+      const text =
+`【${sign} 的今日提醒卡】
+
+${card.title}
+${card.body}${noteText}
+
+可以把這張卡截圖存起來，當成今天的背景程式。`;
+
+      document.getElementById("result").textContent = text;
+    });
+
+    // 三張牌：過去 / 現在 / 未來
+    document.getElementById("btnThreeCards").addEventListener("click", () => {
+      const sign = document.getElementById("sign").value;
+      const note = document.getElementById("note").value;
+
+      const past = pickRandom(pastCards);
+      const present = pickRandom(presentCards);
+      const future = pickRandom(futureCards);
+      const noteText = getUserNoteText(note);
+
+      const text =
+`【${sign}｜三張牌占卜：過去・現在・未來】
+
+🕰 過去：
+${past}
+
+📍 現在：
+${present}
+
+🌱 未來：
+${future}${noteText}
+
+抽牌不是要你照著做，而是幫你整理、命名你已經感覺到的東西。`;
+
+      document.getElementById("result").textContent = text;
+    });
+  </script>
+</body>
+</html>
