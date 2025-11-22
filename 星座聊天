@@ -1,61 +1,397 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>占卜 API Demo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    textarea, select { width: 100%; padding: 10px; margin-top: 10px; }
-    button { padding: 10px 20px; margin-top: 10px; }
-    #result { white-space: pre-line; margin-top: 20px; padding: 15px; background: #f0f0f0; border-radius: 6px; }
-  </style>
+  <meta charset="UTF-8" />
+  <title>星座占卜小宇宙｜今日運勢・提醒卡與三張牌</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="description" content="線上星座占卜小工具：輸入星座與想問的煩惱，AI 自動判斷主題，生成今日運勢、建議與幸運元素。">
+  <meta name="keywords" content="星座占卜, 今日運勢, 抽牌, 戀愛占卜, 工作占卜, 學業占卜, 心情占卜, Gemini API">
+
+    <meta property="og:title" content="星座占卜小宇宙｜今日運勢・提醒卡與三張牌">
+  <meta property="og:description" content="輸入星座與煩惱，小宇宙幫你判斷主題，抽出對應的運勢與提醒卡。">
+  <meta property="og:type" content="website">
+
+  <style>
+    /* 保持原有的 CSS 樣式不變 */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top, #1b1b3a 0%, #050510 55%, #000000 100%);
+      color: #f7f7ff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background: rgba(14, 14, 40, 0.92);
+      border-radius: 24px;
+      padding: 24px 24px 28px;
+      max-width: 520px;
+      width: 92%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(180, 180, 255, 0.25);
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-top: 0;
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 1.1rem;
+    }
+    label {
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    select, textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 10px;
+      font-size: 0.95rem;
+      margin-bottom: 0.9rem;
+      background: rgba(10, 10, 30, 0.85);
+      color: #f7f7ff;
+      outline: none;
+    }
+    select:focus, textarea:focus {
+      border-color: #b794ff;
+      box-shadow: 0 0 0 1px rgba(183, 148, 255, 0.7);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    .pill-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .pill {
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.2);
+      opacity: 0.8;
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 0.4rem;
+      margin-bottom: 0.9rem;
+    }
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #b794ff, #7f5dff);
+      color: #050510;
+      cursor: pointer;
+      flex: 1;
+      min-width: 140px;
+    }
+    button:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    .result-block {
+      margin-top: 4px;
+      margin-bottom: 10px;
+    }
+    .result-title {
+      font-size: 0.95rem;
+      opacity: 0.9;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-box {
+      background: radial-gradient(circle at top left, rgba(183,148,255,0.15), rgba(10,10,30,0.9));
+      border-radius: 16px;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      border: 1px dashed rgba(215, 196, 255, 0.6);
+      white-space: pre-line;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .hint {
+      font-size: 0.78rem;
+      opacity: 0.7;
+      margin-top: 6px;
+    }
+
+    /* 主題區塊 CSS */
+    .topic-row {
+      margin-top: -4px;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+    }
+    .topic-text {
+      opacity: 0.9;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .topic-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .topic-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(20, 20, 50, 0.8);
+      color: #f7f7ff;
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      flex: 0 0 auto;
+      min-width: auto;
+    }
+    .topic-btn:hover {
+      filter: brightness(1.05);
+    }
+    .topic-btn.topic-active {
+      background: linear-gradient(135deg, #ff9de1, #b794ff);
+      color: #1a1030;
+      border-color: rgba(255,255,255,0.8);
+      font-weight: 600;
+    }
+    /* Loading 樣式 */
+    .loading-pulse {
+      animation: pulse-animation 1.5s infinite;
+      color: #b794ff;
+      font-weight: 600;
+    }
+    @keyframes pulse-animation {
+        0% { opacity: 0.5; }
+        50% { opacity: 1.0; }
+        100% { opacity: 0.5; }
+    }
+  </style>
 </head>
 <body>
+  <div class="card">
+    <h1>星座占卜小宇宙</h1>
+    <div class="subtitle">今日運勢、提醒卡與三張牌，一次收齊 ✨ (Powered by Gemini)</div>
 
-  <h2>有 API 的占卜網站</h2>
-  <p>這是示範：前端呼叫後端 API，而不是前端亂數。</p>
+    <div class="pill-row">
+      <div class="pill">雲端 API 連線</div>
+      <div class="pill">需 API Key</div>
+      <div class="pill">主題偵測：戀愛 / 工作 / 學業 / 心情</div>
+    </div>
 
-  <label>星座</label>
-  <select id="sign">
-    <option>牡羊座</option>
-    <option>金牛座</option>
-    <option>雙子座</option>
-    <option>巨蟹座</option>
-    <option>獅子座</option>
-    <option>處女座</option>
-    <option>天秤座</option>
-    <option>天蠍座</option>
-    <option>射手座</option>
-    <option>摩羯座</option>
-    <option>水瓶座</option>
-    <option>雙魚座</option>
-  </select>
+    <label for="sign">你的星座</label>
+    <select id="sign">
+      <option value="牡羊座">牡羊座</option>
+      <option value="金牛座">金牛座</option>
+      <option value="雙子座">雙子座</option>
+      <option value="巨蟹座">巨蟹座</option>
+      <option value="獅子座">獅子座</option>
+      <option value="處女座">處女座</option>
+      <option value="天秤座">天秤座</option>
+      <option value="天蠍座">天蠍座</option>
+      <option value="射手座">射手座</option>
+      <option value="摩羯座">摩羯座</option>
+      <option value="水瓶座">水瓶座</option>
+      <option value="雙魚座">雙魚座</option>
+    </select>
 
-  <label>想補充給宇宙的小事</label>
-  <textarea id="note" placeholder="例如：最近在為了喜歡的人煩惱。"></textarea>
+    <label for="note">想補充給宇宙知道的小事（AI 會參考這段內容）</label>
+    <textarea id="note" placeholder="例如：最近在煩惱喜歡的人、報告、工作或只是覺得心很累。"></textarea>
 
-  <button id="askBtn">詢問宇宙 API</button>
+        <div class="topic-row">
+      <span id="topicText" class="topic-text">
+        目前主題：一般／綜合（如果判斷錯，可以點下面按鈕手動調整）
+      </span>
+      <div class="topic-buttons">
+        <button type="button" class="topic-btn" data-topic="love">戀愛／關係</button>
+        <button type="button" class="topic-btn" data-topic="work">工作／職場</button>
+        <button type="button" class="topic-btn" data-topic="study">學業／考試</button>
+        <button type="button" class="topic-btn" data-topic="heal">心情／療癒</button>
+        <button type="button" class="topic-btn" data-topic="other">一般／自由發揮</button>
+      </div>
+    </div>
 
-  <div id="result"></div>
+    <div class="button-row">
+            <button id="btnHoroscope" onclick="getHoroscope()">🔮 獲得今日解析</button>
+    </div>
 
-  <script>
-    document.getElementById("askBtn").addEventListener("click", async () => {
-      const sign = document.getElementById("sign").value;
-      const note = document.getElementById("note").value;
+    <div class="result-block">
+      <div class="result-title">🔎 解析結果</div>
+      <div id="result" class="result-box">
+        選擇星座並輸入你的煩惱，點擊「獲得今日解析」，AI 將根據你的主題生成運勢、建議與幸運元素。
+      </div>
+      <div class="hint">※ 內容由 Gemini AI 模型生成，僅供參考。請確認後端 Flask 服務和 Ngrok (或部署服務) 正在運行。</div>
+    </div>
+  </div>
 
-      document.getElementById("result").textContent = "宇宙正在思考...";
+  <script>
+    // 🚨 步驟 1：請在這裡手動貼上您最新的 Ngrok HTTPS URL 🚨
+    // 請將 'YOUR_NGROK_HTTPS_URL_HERE' 替換為 Ngrok 提供的網址。
+    const API_ENDPOINT = 'const API_ENDPOINT = ' https://uninured-buzzingly-verna.ngrok-free.dev';
+    
+    // --- UI 元素 ---
+    const resultBox = document.getElementById("result");
+    const signSelect = document.getElementById("sign");
+    const noteTextarea = document.getElementById("note");
+    const topicTextSpan = document.getElementById("topicText");
+    const horoscopeButton = document.getElementById("btnHoroscope");
 
-      const resp = await fetch("/api/fortune", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sign, note })
-      });
+    // --- 主題設定 (用於提示詞中) ---
+    const topicLabels = {
+      love: "戀愛／關係",
+      work: "工作／職場",
+      study: "學業／考試",
+      heal: "心情／療癒",
+      other: "一般／綜合"
+    };
 
-      const data = await resp.json();
-      document.getElementById("result").textContent = data.text;
-    });
-  </script>
+    let currentTopic = "other";
+    let topicOverride = null; 
+
+    // ---- 主題偵測邏輯 ----
+    function detectTopicFromNote(note) {
+      const n = note.trim();
+      if (!n) return "other";
+
+      const loveKeywords = ["喜歡", "曖昧", "戀愛", "感情", "在一起", "分手", "告白", "心動", "男友", "女友"];
+      const workKeywords = ["工作", "上班", "職場", "公司", "老闆", "主管", "面試", "加班", "專案"];
+      const studyKeywords = ["報告", "作業", "功課", "考試", "學校", "期中", "期末", "論文", "學習"];
+      const healKeywords = ["心累", "焦慮", "憂鬱", "想哭", "崩潰", "壓力", "好累", "疲憊", "不想動"];
+
+      const check = (list) => list.some(k => n.includes(k));
+
+      if (check(loveKeywords)) return "love";
+      if (check(workKeywords)) return "work";
+      if (check(studyKeywords)) return "study";
+      if (check(healKeywords)) return "heal";
+      return "other";
+    }
+
+    function updateTopicUI(topic, fromUser) {
+      currentTopic = topic;
+      if (fromUser) {
+        topicOverride = topic;
+      }
+      const label = topicLabels[topic] || topicLabels.other;
+      topicTextSpan.textContent = `目前主題：${label}（${fromUser ? "手動選擇" : "系統判定"}）`;
+
+      document.querySelectorAll(".topic-btn").forEach(btn => {
+        btn.classList.toggle("topic-active", btn.dataset.topic === topic);
+      });
+    }
+
+    function autoDetectTopic() {
+      if (topicOverride) return;
+      const note = noteTextarea.value;
+      const detected = detectTopicFromNote(note);
+      updateTopicUI(detected, false);
+    }
+
+    // ---- 綁定事件 ----
+    updateTopicUI("other", false);
+    noteTextarea.addEventListener("input", () => {
+      topicOverride = null; 
+      autoDetectTopic();
+    });
+
+    document.querySelectorAll(".topic-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const t = btn.dataset.topic;
+        updateTopicUI(t, true);
+      });
+    });
+    
+    // 將 API 呼叫公開給按鈕
+    window.getHoroscope = getHoroscope; 
+
+    // 整合 Gemini API 呼叫
+    async function getHoroscope() {
+        const sign = signSelect.value;
+        const note = noteTextarea.value;
+        autoDetectTopic(); // 最終確認主題
+        const topicLabel = topicLabels[currentTopic] || topicLabels.other;
+
+        if (!sign) {
+            resultBox.innerHTML = '請先選擇一個星座！';
+            return;
+        }
+        
+        if (API_ENDPOINT.includes(' https://uninured-buzzingly-verna.ngrok-free.dev')) {
+             resultBox.innerHTML = '<h3>🚨 配置錯誤！</h3><p>請將 index.html 中的 API_ENDPOINT 替換成您的 Ngrok 公開 URL。</p>';
+             return;
+        }
+
+        // 提示使用者，AI 將會根據他們輸入的 note 和偵測到的主題來生成內容
+        const initialNote = note.trim() ? `（參考主題：${topicLabel}）` : '';
+        const loadingText = `正在向宇宙連線，請稍候... ${initialNote}`;
+
+        resultBox.innerHTML = `<span class="loading-pulse">${loadingText}</span>`;
+        horoscopeButton.disabled = true;
+
+        try {
+            // 發送主題和備註給後端 Flask 服務
+            const response = await fetch(API_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    constellation: sign,
+                    note: note,
+                    topic: currentTopic
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // 成功取得運勢
+                
+                // 增加主題作為開頭
+                const finalOutput = `【${sign}｜今日解析｜主題：${topicLabel}】\n\n` + data.horoscope;
+                resultBox.textContent = finalOutput;
+            } else {
+                // 處理 API 或後端錯誤
+                resultBox.innerHTML = `
+                    <h3>🔴 解析失敗 (HTTP ${response.status})！</h3>
+                    <p><strong>錯誤類型:</strong> ${data.error || '伺服器未回應'}</p>
+                    <p><strong>詳情:</strong> ${data.details || '請檢查您的 Flask 後端程式碼和 API Key。'}</p>
+                `;
+            }
+        } catch (error) {
+            // 處理網路連線失敗
+            console.error('Fetch error:', error);
+            resultBox.innerHTML = `
+                <h3>🚨 連線中斷！</h3>
+                <p><strong>原因:</strong> 無法連線到後端伺服器。</p>
+                <p><strong>建議:</strong> 請確認您的 Flask 服務 (5000) 和 Ngrok 服務都已啟動。</p>
+            `;
+        } finally {
+            horoscopeButton.disabled = false;
+        }
+    }
+  </script>
 </body>
 </html>
-
