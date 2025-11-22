@@ -6,12 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- 簡單 SEO 描述 -->
-  <meta name="description" content="免費線上星座占卜小工具：輸入星座，即可隨機生成今日運勢、提醒卡與三張牌（過去・現在・未來）解讀，純前端靜態網頁，不需 API key。">
-  <meta name="keywords" content="星座占卜, 今日運勢, 抽牌, 線上占卜, 免費占卜, 星座提醒卡">
+  <meta name="description" content="免費線上星座占卜小工具：輸入星座與想問的煩惱，系統自動判斷主題（戀愛 / 工作 / 學業 / 心情），生成對應的今日運勢、提醒卡與三張牌解讀，不需 API key。">
+  <meta name="keywords" content="星座占卜, 今日運勢, 抽牌, 戀愛占卜, 工作占卜, 學業占卜, 心情占卜">
 
   <!-- 社群預覽 -->
   <meta property="og:title" content="星座占卜小宇宙｜今日運勢・提醒卡・抽牌">
-  <meta property="og:description" content="輸入星座，即可抽出今日運勢、提醒卡與三張牌的小宇宙占卜網站。">
+  <meta property="og:description" content="輸入星座與煩惱，小宇宙幫你判斷主題，抽出對應的運勢與提醒卡。">
   <meta property="og:type" content="website">
 
   <style>
@@ -141,6 +141,43 @@
       opacity: 0.7;
       margin-top: 6px;
     }
+
+    /* 主題區塊 CSS */
+    .topic-row {
+      margin-top: -4px;
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+    }
+    .topic-text {
+      opacity: 0.9;
+      margin-bottom: 4px;
+      display: block;
+    }
+    .topic-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .topic-btn {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(20, 20, 50, 0.8);
+      color: #f7f7ff;
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      flex: 0 0 auto;
+      min-width: auto;
+    }
+    .topic-btn:hover {
+      filter: brightness(1.05);
+    }
+    .topic-btn.topic-active {
+      background: linear-gradient(135deg, #ff9de1, #b794ff);
+      color: #1a1030;
+      border-color: rgba(255,255,255,0.8);
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -151,7 +188,7 @@
     <div class="pill-row">
       <div class="pill">純前端靜態網頁</div>
       <div class="pill">無需 API key</div>
-      <div class="pill">適合作業 / 小專題</div>
+      <div class="pill">主題偵測：戀愛 / 工作 / 學業 / 心情</div>
     </div>
 
     <label for="sign">你的星座</label>
@@ -171,7 +208,21 @@
     </select>
 
     <label for="note">想補充給宇宙知道的小事（會出現在今日解讀中，可留白）</label>
-    <textarea id="note" placeholder="例如：最近在趕報告，有點焦慮，但還是想知道自己會不會順利。"></textarea>
+    <textarea id="note" placeholder="例如：最近在煩惱喜歡的人、報告、工作或只是覺得心很累。"></textarea>
+
+    <!-- 主題偵測＋覆蓋 -->
+    <div class="topic-row">
+      <span id="topicText" class="topic-text">
+        目前主題：一般／綜合（如果判斷錯，可以點下面按鈕手動調整）
+      </span>
+      <div class="topic-buttons">
+        <button type="button" class="topic-btn" data-topic="love">戀愛／關係</button>
+        <button type="button" class="topic-btn" data-topic="work">工作／職場</button>
+        <button type="button" class="topic-btn" data-topic="study">學業／考試</button>
+        <button type="button" class="topic-btn" data-topic="heal">心情／療癒</button>
+        <button type="button" class="topic-btn" data-topic="other">一般／自由發揮</button>
+      </div>
+    </div>
 
     <div class="button-row">
       <button id="btnHoroscope">🔮 今日占星運勢</button>
@@ -182,17 +233,16 @@
     <div class="result-block">
       <div class="result-title">🔎 解析結果</div>
       <div id="result" class="result-box">
-        選好星座後，試試上面的按鈕：
-        ・「今日占星運勢」：偏整體狀態
-        ・「今日提醒卡」：給你一句當下需要聽的話
-        ・「三張牌」：用過去 / 現在 / 未來的角度幫你排版今天的人生
+        先選星座，隨便打一段你現在在煩惱的事。<br>
+        系統會自動偵測你是在問：戀愛／工作／學業／心情，<br>
+        如果不準，可以用上面的主題按鈕手動改，再按下面任一抽牌按鈕。
       </div>
-      <div class="hint">※ 所有內容皆為程式隨機生成，僅供參考、不連線任何伺服器或 AI 模型。</div>
+      <div class="hint">※ 內容皆為程式隨機生成，僅供參考，不連線任何伺服器或 AI 模型。</div>
     </div>
   </div>
 
   <script>
-    // 每個星座的口氣設定
+    // --- 星座語氣 ---
     const signTones = {
       "牡羊座": "你今天的狀態像是踩在油門和煞車之間，一不小心就想衝出去，但又會突然冷靜下來。",
       "金牛座": "你特別需要一種被好好對待的感覺，不一定是大事，只要是穩定、可預期就會讓你安心。",
@@ -208,74 +258,229 @@
       "雙魚座": "你今天特別敏感，容易被氣氛牽著走，很適合做一點讓自己舒服的小事。"
     };
 
-    // 今日運勢：總體氛圍 + 小提醒
-    const horoscopeVibes = [
-      "今天的主題是：在混亂裡找到一個可以暫時喘息的小角落。",
-      "今天適合先照顧好自己的身體，再談理想與計畫。",
-      "今天的你不一定狀態完美，但某種不完美剛好讓你更接近真實的自己。",
-      "今天很適合把節奏調慢一點，讓事情有機會自己長出答案。",
-      "今天容易被別人的步調影響，但你仍然有權選擇自己的速度。"
-    ];
+    // --- 主題設定 ---
+    const topicLabels = {
+      love: "戀愛／關係",
+      work: "工作／職場",
+      study: "學業／考試",
+      heal: "心情／療癒",
+      other: "一般／綜合"
+    };
 
-    const smallTips = [
-      "試著在行程中空出 10 分鐘，只做一件完全跟效率無關的小事。",
-      "如果事情很多，先寫下三件『不做也不會世界毀滅』的事，暫時從待辦清單刪掉。",
-      "允許自己有一點點廢，一點點就好，不需要拿今天的自己和巔峰狀態比較。",
-      "把你最在意的一件事寫下來，問自己：如果只完成 60%，是不是還是可以？",
-      "找一個你信任的人，傳一個不需要得到回覆的訊息，只是讓對方知道你還在努力。"
-    ];
-
-    // 今日提醒卡
-    const reminderCards = [
-      {
-        title: "卡片：你可以慢一點",
-        body: "你不用每一刻都表現得很有方向感。允許自己暫時模糊，方向感會在你願意停下來的時候慢慢自己長出來。"
+    // 各主題的文案池
+    const topicConfigs = {
+      love: {
+        horoscopeVibes: [
+          "今天的主題落在關係上，你特別在意別人的一句話或一個表情。",
+          "你在感情裡的需求被放大了，如果能誠實說出來，關係會比較輕鬆。",
+          "今天適合面對自己的喜歡與不安，而不是裝作若無其事。"
+        ],
+        smallTips: [
+          "如果你在等訊息，幫自己設定一個『關機時間』，過了就先把手機放下。",
+          "寫下一段你理想中被對待的方式，檢查自己有沒有先這樣對自己。",
+          "選一個你信任的人，說一句平常不好意思說出口的真心話。"
+        ],
+        reminderCards: [
+          {
+            title: "卡片：先照顧好你自己",
+            body: "你很用力地喜歡別人，有時候會忘記自己也需要被好好喜歡。今天先對自己溫柔一點，再來談要怎麼對待關係。"
+          },
+          {
+            title: "卡片：行動可以小一點",
+            body: "你不需要一次做出會改變一切的大舉動。先從一個不那麼可怕的小行動開始，例如多問一句、多回一句真心話。"
+          },
+          {
+            title: "卡片：界線不是拒絕，是保護",
+            body: "你害怕畫界線，是因為不想失去這段關係。但健康的界線會留下真正適合的人，而不是把人推開。"
+          }
+        ],
+        past: [
+          "過去的你常常習慣先配合別人的節奏，怕自己『太黏』或『太冷淡』，於是一直在找剛好的距離。",
+          "你曾經在關係裡受過傷，所以現在變得很敏感，對一點點變化都會特別在意。",
+          "你習慣用努力和貼心換安全感，卻很少問自己：這段關係有沒有也回頭照顧你。"
+        ],
+        present: [
+          "現在的你正在卡在『要不要再多踏出一步』的十字路口，既怕打擾對方，又怕錯過機會。",
+          "你一邊想讀懂對方的反應，一邊也在猜測自己的價值，這會讓你很累。",
+          "你其實已經察覺到一些線索，只是還不太敢把那些可能的答案說出口。"
+        ],
+        future: [
+          "未來的你會更清楚自己在感情裡要的是什麼，也比較不會為了不孤單而勉強留下。",
+          "如果你願意從今天開始多為自己想一點，未來的關係會更像是一起走路，而不是單方面付出。",
+          "有一天你會發現，那些以為得不到回應的喜歡，其實都在把你推向更懂得珍惜你的人。"
+        ]
       },
-      {
-        title: "卡片：你已經做得比想像中多",
-        body: "你習慣看著自己還沒做到的地方，但如果把這一兩週累積的努力排成一列，你會發現自己其實沒有停下來過。"
+      work: {
+        horoscopeVibes: [
+          "今天的焦點在工作與責任，你腦袋自動在盤點待辦清單。",
+          "你對成果的要求偏高，容易覺得『還不夠好』，但其實已經很多了。",
+          "今天適合拆解任務，而不是一次把所有壓力往自己身上堆。"
+        ],
+        smallTips: [
+          "寫下今天最重要的一件工作，而不是三件，只要完成一件就算過關。",
+          "為自己設定一個收工儀式，例如關掉電腦、洗個臉，提醒自己已經下班。",
+          "列出一件你做得不錯的小地方，就算沒人稱讚，你也可以先肯定自己。"
+        ],
+        reminderCards: [
+          {
+            title: "卡片：你不是工作機器",
+            body: "你很努力把事情做好，但你不是為了變成更好用的工具而存在。請把自己的感受，也當成一個專案來照顧。"
+          },
+          {
+            title: "卡片：效率不等於價值",
+            body: "工作快不快只是節奏問題，不是你值不值得被尊重。別用產出量衡量整個人的價值。"
+          },
+          {
+            title: "卡片：可以適度放下完美主義",
+            body: "有些任務做到 70 分就已經足夠，不需要每一件都做到 100 分。把力氣留給真正重要的那幾件就好。"
+          }
+        ],
+        past: [
+          "過去的你很習慣默默扛責任，別人一丟事情，你就先接著再說。",
+          "你常靠加班或多做一點來換安心感，怕被覺得不夠努力。",
+          "你在工作上受過一些不公平對待，這讓你更堅持要證明自己。"
+        ],
+        present: [
+          "現在的你手上的事情有點多，很難同時滿足別人的期待與自己的步調。",
+          "你一邊想要好好完成任務，一邊又覺得自己快被榨乾，需要休息。",
+          "你正在學習說『這樣對我來說太多了』，這是很重要的一步。"
+        ],
+        future: [
+          "未來的你會更懂得談條件，而不是默默吞下所有要求。",
+          "如果你願意從今天開始練習畫出一點點界線，未來的工作會比較像合作，而不是被使用。",
+          "有一天你會謝謝現在的自己，因為你沒有再把所有壓力都往自己身上堆。"
+        ]
       },
-      {
-        title: "卡片：請先照顧現在的你",
-        body: "有時候你太忙著成為『未來會感謝的自己』，卻忘記安撫正在辛苦撐著的現在的你。今天先對現在的自己好一點。"
+      study: {
+        horoscopeVibes: [
+          "今天的主題集中在學業與考試，你對時間和進度特別敏感。",
+          "你腦中一直在算『來得及嗎』，這讓你很難真正放鬆。",
+          "今天適合用小段時間專注，而不是要求自己一次爆衝完美。"
+        ],
+        smallTips: [
+          "設定 20～25 分鐘的專注計時器，只攻下一個小目標。",
+          "讀書前寫下一句話：『我不是要完美，只是要比剛剛多懂一點點。』",
+          "選一個你最害怕的章節，先念一頁就好，讓它不再那麼可怕。"
+        ],
+        reminderCards: [
+          {
+            title: "卡片：成績只是其中一種量尺",
+            body: "成績會影響一些事，但不會定義你的一輩子。你身上有很多是分數量不出來的東西。"
+          },
+          {
+            title: "卡片：你已經有在前進",
+            body: "也許進度沒有理想中那麼快，但你並沒有停在原地。每一次打開書本、寫下一行筆記，都算數。"
+          },
+          {
+            title: "卡片：不用一個人硬撐",
+            body: "如果真的覺得快撐不住，可以試著開口跟同學、老師或身邊的人討論。一起面對，比一個人焦慮強。"
+          }
+        ],
+        past: [
+          "過去的你常把『表現好不好』當成能不能被喜歡的條件。",
+          "你在求學過程中被拿來比較過很多次，這讓你對分數特別敏感。",
+          "你曾經為了趕上別人的節奏犧牲休息，這也讓你累積了不少疲憊。"
+        ],
+        present: [
+          "現在的你同時在對付截止日期、壓力和自我懷疑。",
+          "你很怕自己不夠好，但事實上你已經比想像中更堅持。",
+          "你正在學習用更溫柔的方式督促自己，而不是只靠自我批評。"
+        ],
+        future: [
+          "未來的你會比較知道自己的讀書節奏，懂得怎麼分配力氣。",
+          "你會慢慢發現，真正留下來的不是考卷，而是你在過程中長出的能力和勇氣。",
+          "有一天你會發現，現在覺得好可怕的東西，其實只是人生眾多考題中的幾題而已。"
+        ]
       },
-      {
-        title: "卡片：你不是一個人",
-        body: "即使大家看起來都很忙、很厲害、很成熟，也有人在跟你一樣的位置上用力撐著。你可以選擇把一點點重量交給別人。"
+      heal: {
+        horoscopeVibes: [
+          "今天的關鍵字是『心累』，你的情緒對壓力特別敏感。",
+          "你可能覺得自己快被耗乾，但同時又覺得不能停下來。",
+          "今天適合把『好好活著』當成唯一必做的功課。"
+        ],
+        smallTips: [
+          "找一段 5 分鐘，只專心做呼吸，什麼也不做也不滑。",
+          "寫下一句今天想對自己說的溫柔廢話，例如：『沒關係啦，先活過今天就很猛了。』",
+          "把明明很累卻不敢說出口的那句話，寫在紙上，不一定要給別人看。"
+        ],
+        reminderCards: [
+          {
+            title: "卡片：允許自己暫時沒那麼堅強",
+            body: "你不需要每一刻都處在最佳狀態。承認自己累了，不是示弱，是對自己誠實。"
+          },
+          {
+            title: "卡片：你的感受是真的",
+            body: "就算旁人覺得沒什麼，你的辛苦也不會因此消失。請相信，你的感受有被好好對待的資格。"
+          },
+          {
+            title: "卡片：小小的快樂也算數",
+            body: "不要小看一杯好喝的飲料、一段好笑的影片，它們都是你撐過今天的支點。"
+          }
+        ],
+        past: [
+          "過去的你習慣把情緒往心裡塞，怕說出來會變成麻煩。",
+          "你曾經在情緒被忽略的環境裡長大，所以學會了自己消化。",
+          "你長期處在高壓模式，身體早就發出很多提醒，只是你太忙沒有聽見。"
+        ],
+        present: [
+          "現在的你在邊走邊喘，覺得再撐一下就好，但其實很需要好好休息。",
+          "你一邊覺得自己不能倒下，一邊又很想有人可以接住你。",
+          "你正在學習把『照顧自己』從奢侈品變成日常必需品。"
+        ],
+        future: [
+          "未來的你會更懂得分辨哪些事值得消耗情緒，哪些可以放下。",
+          "如果你願意從今天開始多聽一點身體的聲音，未來的你會比較輕鬆。",
+          "有一天你會回頭謝謝現在的自己，因為你願意承認『我真的累了』，並且做出改變。"
+        ]
       },
-      {
-        title: "卡片：你可以換一種問法",
-        body: "如果『我要怎麼做到最好』太痛苦，不妨改問：『我怎麼做才不會那麼累、但還是有前進一點？』"
+      other: {
+        horoscopeVibes: [
+          "今天的主題是：在混亂裡找到一個可以暫時喘息的小角落。",
+          "今天適合先照顧好自己的身體，再談理想與計畫。",
+          "今天的你不一定狀態完美，但某種不完美剛好讓你更接近真實的自己。"
+        ],
+        smallTips: [
+          "試著在行程中空出 10 分鐘，只做一件完全跟效率無關的小事。",
+          "如果事情很多，先寫下三件『不做也不會世界毀滅』的事，暫時從待辦清單刪掉。",
+          "允許自己有一點點廢，一點點就好，不需要拿今天的自己和巔峰狀態比較。"
+        ],
+        reminderCards: [
+          {
+            title: "卡片：你已經做得很好了",
+            body: "也許你覺得自己還不夠，但你已經在現有條件下盡力了。請給自己一點時間，讓成果慢慢長出來。"
+          },
+          {
+            title: "卡片：可以改問別的問題",
+            body: "如果『我到底行不行』這個問題太折磨人，不妨改問：『我現在能為自己做的下一個小決定是什麼？』"
+          },
+          {
+            title: "卡片：慢慢來也沒關係",
+            body: "你的人生不是跟別人比賽。只要方向大致是你想去的地方，就算走得慢也很值得。"
+          }
+        ],
+        past: [
+          "過去的你用很多方式在嘗試生存，有時候是努力，有時候是裝作沒事。",
+          "你花了很多力氣在滿足別人的期待，才慢慢開始問自己真正想要什麼。",
+          "你走過一些別人不一定懂的辛苦，所以現在的你更加敏感而溫柔。"
+        ],
+        present: [
+          "現在的你同時在處理外在的事情和內在的情緒，像是在雙線作戰。",
+          "你可能覺得自己很矛盾，但其實那只是不同的需求在說話。",
+          "你正在學習用更溫柔的方式對待自己，不再只靠批評來推動前進。"
+        ],
+        future: [
+          "未來的你會更清楚自己在乎的是什麼，也會更敢說出來。",
+          "如果你願意持續為自己做一點點選擇，生活會慢慢變成比較像你的樣子。",
+          "有一天你會發現，現在覺得很迷惘的這一段，其實是之後故事裡很重要的一章。"
+        ]
       }
-    ];
-
-    // 三張牌內容
-    const pastCards = [
-      "過去的你習慣先把別人的期待放在前面，很多決定其實是為了不要讓別人失望。",
-      "你走到現在，是靠著一次次『先撐過去再說』的決定堆積起來的，這份韌性值得被看見。",
-      "你曾經為了想要被認同，而做了很多超過自己極限的事，這也是為什麼你現在會特別容易累。",
-      "你已經試過很多別人教的做法了，所以你有資格開始相信自己的直覺。"
-    ];
-
-    const presentCards = [
-      "現在的你站在一個十字路口，看起來像是在原地打轉，但其實你正在排除不適合自己的選項。",
-      "你表面上看起來還在照常運作，心裡卻同時在重整優先順序，這種內在重組本來就會伴隨混亂感。",
-      "你同時背著『要負責任』和『想要自由』兩個背包，所以才會覺得特別重。",
-      "你其實已經隱約知道哪一條路比較貼近自己，只是還在幫自己找到說服的理由。"
-    ];
-
-    const futureCards = [
-      "未來的你不會變成完美版本，但會變成一個比較懂得分配力氣的人，知道什麼值得、什麼可以放過。",
-      "如果你願意從今天開始為自己多做一點點選擇，未來的生活會慢慢長成比較像你的樣子。",
-      "有一天你會發現，當初那些以為會毀掉一切的失誤，只是幫你換了一條更適合的路線。",
-      "未來的你回頭看現在，會對現在的自己說：『謝謝你那時候沒有放棄。』"
-    ];
+    };
 
     function pickRandom(arr) {
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
-    // ⭐ 把使用者輸入的 note 做成清楚的一段輸出
+    // 把使用者 note 做成清楚的一段輸出
     function getUserNoteText(note) {
       if (!note.trim()) return "";
       return `
@@ -289,18 +494,87 @@
 `;
     }
 
+    // ---- 主題偵測邏輯（C 方案：自動＋可覆蓋）----
+    let currentTopic = "other";
+    let topicOverride = null; // 使用者有沒有手動選
+
+    function detectTopicFromNote(note) {
+      const n = note.trim();
+      if (!n) return "other";
+
+      const loveKeywords = ["喜歡", "曖昧", "戀愛", "感情", "在一起", "分手", "告白", "心動", "男友", "女友"];
+      const workKeywords = ["工作", "上班", "職場", "公司", "老闆", "主管", "面試", "加班"];
+      const studyKeywords = ["報告", "作業", "功課", "考試", "學校", "期中", "期末", "論文"];
+      const healKeywords = ["心累", "焦慮", "憂鬱", "想哭", "崩潰", "壓力", "好累", "疲憊", "不想動"];
+
+      const check = (list) => list.some(k => n.includes(k));
+
+      if (check(loveKeywords)) return "love";
+      if (check(workKeywords)) return "work";
+      if (check(studyKeywords)) return "study";
+      if (check(healKeywords)) return "heal";
+      return "other";
+    }
+
+    function updateTopicUI(topic, fromUser) {
+      currentTopic = topic;
+      if (fromUser) {
+        topicOverride = topic;
+      }
+      const label = topicLabels[topic] || topicLabels.other;
+      const topicText = document.getElementById("topicText");
+      topicText.textContent = `目前主題：${label}（${fromUser ? "手動選擇" : "系統判定，可上面調整"}）`;
+
+      document.querySelectorAll(".topic-btn").forEach(btn => {
+        btn.classList.toggle("topic-active", btn.dataset.topic === topic);
+      });
+    }
+
+    function autoDetectTopic() {
+      if (topicOverride) return; // 使用者已經手動選，就不要再亂改
+      const note = document.getElementById("note").value;
+      const detected = detectTopicFromNote(note);
+      updateTopicUI(detected, false);
+    }
+
+    // ---- 綁定事件 ----
+    // 初始化主題 UI
+    updateTopicUI("other", false);
+
+    // note 改變時，自動偵測主題
+    document.getElementById("note").addEventListener("input", () => {
+      topicOverride = null; // 重新輸入就讓系統重新判斷
+      autoDetectTopic();
+    });
+
+    // 主題按鈕：手動覆蓋
+    document.querySelectorAll(".topic-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const t = btn.dataset.topic;
+        updateTopicUI(t, true);
+      });
+    });
+
+    function getConfigForCurrentTopic() {
+      return topicConfigs[currentTopic] || topicConfigs.other;
+    }
+
+    // ---- 三種抽法 ----
     // 今日占星運勢
     document.getElementById("btnHoroscope").addEventListener("click", () => {
       const sign = document.getElementById("sign").value;
       const note = document.getElementById("note").value;
+      autoDetectTopic(); // 再確認一次主題
+      const cfg = getConfigForCurrentTopic();
 
       const tone = signTones[sign] || "";
-      const vibe = pickRandom(horoscopeVibes);
-      const tip = pickRandom(smallTips);
+      const vibe = pickRandom(cfg.horoscopeVibes);
+      const tip = pickRandom(cfg.smallTips);
       const noteText = getUserNoteText(note);
+      const topicLabel = topicLabels[currentTopic] || topicLabels.other;
 
       const text =
-`【${sign}｜今日占星運勢】
+`【${sign}｜今日占星運勢｜主題：${topicLabel}】
 
 ${tone}
 
@@ -311,7 +585,7 @@ ${noteText}
 給你的實用小提醒：
 ${tip}
 
-※ 請把這個結果當作一個小小觀察視角，而不是命令。`;
+※ 請把這個結果當成一個小小觀察視角，而不是命令。`;
 
       document.getElementById("result").textContent = text;
     });
@@ -320,12 +594,15 @@ ${tip}
     document.getElementById("btnSingleCard").addEventListener("click", () => {
       const sign = document.getElementById("sign").value;
       const note = document.getElementById("note").value;
+      autoDetectTopic();
+      const cfg = getConfigForCurrentTopic();
+      const topicLabel = topicLabels[currentTopic] || topicLabels.other;
 
-      const card = pickRandom(reminderCards);
+      const card = pickRandom(cfg.reminderCards);
       const noteText = getUserNoteText(note);
 
       const text =
-`【${sign} 的今日提醒卡】
+`【${sign} 的今日提醒卡｜主題：${topicLabel}】
 
 ${card.title}
 ${card.body}
@@ -340,14 +617,17 @@ ${noteText}
     document.getElementById("btnThreeCards").addEventListener("click", () => {
       const sign = document.getElementById("sign").value;
       const note = document.getElementById("note").value;
+      autoDetectTopic();
+      const cfg = getConfigForCurrentTopic();
+      const topicLabel = topicLabels[currentTopic] || topicLabels.other;
 
-      const past = pickRandom(pastCards);
-      const present = pickRandom(presentCards);
-      const future = pickRandom(futureCards);
+      const past = pickRandom(cfg.past);
+      const present = pickRandom(cfg.present);
+      const future = pickRandom(cfg.future);
       const noteText = getUserNoteText(note);
 
       const text =
-`【${sign}｜三張牌占卜：過去・現在・未來】
+`【${sign}｜三張牌占卜：過去・現在・未來｜主題：${topicLabel}】
 
 🕰 過去：
 ${past}
