@@ -4,6 +4,16 @@
   <meta charset="UTF-8" />
   <title>星座占卜小宇宙｜今日運勢・提醒卡・抽牌</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- 簡單 SEO 描述 -->
+  <meta name="description" content="免費線上星座占卜小工具：輸入星座，即可隨機生成今日運勢、提醒卡與三張牌（過去・現在・未來）解讀，純前端靜態網頁，不需 API key。">
+  <meta name="keywords" content="星座占卜, 今日運勢, 抽牌, 線上占卜, 免費占卜, 星座提醒卡">
+
+  <!-- 社群預覽 -->
+  <meta property="og:title" content="星座占卜小宇宙｜今日運勢・提醒卡・抽牌">
+  <meta property="og:description" content="輸入星座，即可抽出今日運勢、提醒卡與三張牌的小宇宙占卜網站。">
+  <meta property="og:type" content="website">
+
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Noto Sans TC", sans-serif;
@@ -160,8 +170,8 @@
       <option value="雙魚座">雙魚座</option>
     </select>
 
-    <label for="note">想補充給宇宙知道的小事（可留白）</label>
-    <textarea id="note" placeholder="例如：最近在趕報告、有點焦慮，但還是想知道自己會不會順利。"></textarea>
+    <label for="note">想補充給宇宙知道的小事（會出現在今日解讀中，可留白）</label>
+    <textarea id="note" placeholder="例如：最近在趕報告，有點焦慮，但還是想知道自己會不會順利。"></textarea>
 
     <div class="button-row">
       <button id="btnHoroscope">🔮 今日占星運勢</button>
@@ -215,7 +225,7 @@
       "找一個你信任的人，傳一個不需要得到回覆的訊息，只是讓對方知道你還在努力。"
     ];
 
-    // 今日提醒卡：一句話＋簡短說明
+    // 今日提醒卡
     const reminderCards = [
       {
         title: "卡片：你可以慢一點",
@@ -239,7 +249,7 @@
       }
     ];
 
-    // 三張牌的內容（過去 / 現在 / 未來）
+    // 三張牌內容
     const pastCards = [
       "過去的你習慣先把別人的期待放在前面，很多決定其實是為了不要讓別人失望。",
       "你走到現在，是靠著一次次『先撐過去再說』的決定堆積起來的，這份韌性值得被看見。",
@@ -265,9 +275,18 @@
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
+    // ⭐ 把使用者輸入的 note 做成清楚的一段輸出
     function getUserNoteText(note) {
       if (!note.trim()) return "";
-      return `\n\n你對宇宙悄悄補充的是：\n「${note.trim()}」\n就把它當作今天抽牌時，一起被讀取的背景訊息。`;
+      return `
+────────────────────────
+🪐 你對宇宙悄悄補充的小事：
+
+「${note.trim()}」
+
+宇宙已經收到這份背景訊息，會一起放進今日的解讀中。
+────────────────────────
+`;
     }
 
     // 今日占星運勢
@@ -288,8 +307,9 @@ ${tone}
 宇宙的今日主題：
 ${vibe}
 
+${noteText}
 給你的實用小提醒：
-${tip}${noteText}
+${tip}
 
 ※ 請把這個結果當作一個小小觀察視角，而不是命令。`;
 
@@ -308,8 +328,9 @@ ${tip}${noteText}
 `【${sign} 的今日提醒卡】
 
 ${card.title}
-${card.body}${noteText}
+${card.body}
 
+${noteText}
 可以把這張卡截圖存起來，當成今天的背景程式。`;
 
       document.getElementById("result").textContent = text;
@@ -335,8 +356,9 @@ ${past}
 ${present}
 
 🌱 未來：
-${future}${noteText}
+${future}
 
+${noteText}
 抽牌不是要你照著做，而是幫你整理、命名你已經感覺到的東西。`;
 
       document.getElementById("result").textContent = text;
